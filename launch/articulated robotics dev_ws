@@ -1,0 +1,93 @@
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run twist_mux twist_mux --ros-args --params-file ./src/my_bot/config/twist_mux.yaml -r cmd_vel_out:=diff_cont/cmd_vel_unstamped
+
+printenv | grep -i ROS
+
+<-- To access your own packages: (above, line 2) -->
+
+Build and launch file: /dev_ws$ 
+
+colcon build --symlink-install
+ros2 launch my_bot rsp.launch.py use_sim_time:=true
+
+
+
+<-- Integrated launch file -->
+
+source install/setup.bash
+colcon build --symlink-install
+ros2 launch my_bot launch_sim.launch.py world:=./src/my_bot/worlds/ros_challenge_sekai.world use_sim_time:=true
+
+
+source install/setup.bash
+rviz2 -d ~/dev_ws/src/my_bot/config/nav2_bot.rviz
+
+source install/setup.bash
+ros2 launch nav2_bringup rviz_launch.py
+
+(use this RVIZ for the auto exploration)
+
+
+source install/setup.bash
+ros2 launch slam_toolbox online_async_launch.py slam_params_file:=./src/my_bot/config/mapper_params_online_async.yaml use_sim_time:=true
+
+
+source install/setup.bash
+ros2 run teleop_twist_keyboard teleop_twist_keyboard
+
+
+<-- Integrated launch file for Nav2 -->
+
+source install/setup.bash
+ros2 launch my_bot navigation_launch.py use_sim_time:=true map_subscribe_transient_local:=true
+
+run this ^ for the auto exploration
+
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run nav2_map_server map_server --ros-args -p yaml_filename:=map_test4.yaml -p use_sim_time:=true
+
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run nav2_amcl amcl --ros-args -p use_sim_time:=true
+
+source /opt/ros/humble/setup.bash
+source install/setup.bash
+ros2 run nav2_util lifecycle_bringup map_server
+ros2 run nav2_util lifecycle_bringup amcl
+
+<-- AutoFrontier --> (not working as well)
+
+source install/setup.bash
+ros2 run frontier_exploration explorer
+
+<-- AniArka package -->
+
+source install/setup.bash
+ros2 run custom_explorer explorer
+
+
+
+# Fully autonomous frontier exploration, 5 terminals
+
+##1 Launch Gazebo
+source install/setup.bash
+colcon build --symlink-install
+ros2 launch my_bot launch_sim.launch.py world:=./src/my_bot/worlds/ros_challenge_sekai.world use_sim_time:=true
+
+##2 Launch Nav2 RVIZ
+source install/setup.bash
+ros2 launch nav2_bringup rviz_launch.py
+
+##3 Launch SLAM
+source install/setup.bash
+ros2 launch slam_toolbox online_async_launch.py use_sim_time:=true
+
+##4 Launch Nav2
+source install/setup.bash
+ros2 launch my_bot navigation_launch.py use_sim_time:=true map_subscribe_transient_local:=true
+
+##5 Launch exploration algo
+source install/setup.bash
+ros2 run custom_explorer explorer
